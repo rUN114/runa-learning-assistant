@@ -8,7 +8,7 @@
 
 ## 安装
 
-1. 从 Releases 下载 Runa学习助手.zip 并解压。
+1. 从 Releases 下载 Runa.zip 并解压。
 2. 打开 edge://extensions，开启“开发人员模式”，选择“加载解压缩的扩展”。
 3. 选择包含 manifest.json 的 DeepSeek-右侧栏版文件夹。
 4. 点击扩展图标打开右侧栏，在设置中填写自己的接口地址、模型和 API Key。

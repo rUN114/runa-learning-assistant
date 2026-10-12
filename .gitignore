@@ -11,3 +11,4 @@ outputs/DeepSeek-右侧栏预览.png
 *.tsbuildinfo
 .DS_Store
 Thumbs.db
+outputs/*.sha256
