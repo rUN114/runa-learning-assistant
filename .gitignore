@@ -1,0 +1,13 @@
+node_modules/
+work/
+outputs/*.zip
+outputs/DeepSeek-右侧栏预览.png
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.log
+*.tsbuildinfo
+.DS_Store
+Thumbs.db

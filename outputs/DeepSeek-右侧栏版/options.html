@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Runa学习助手 · 设置</title><link rel="icon" href="icons/icon.png"><link rel="stylesheet" href="theme.css"><link rel="stylesheet" href="options.css"></head>
+<body><main>
+  <header><img class="seal" src="icons/icon.png" alt="Runa人物头像"><div><h1>Runa学习助手</h1><p>接入自己的 AI，陪你学习</p></div></header>
+  <p class="intro">填写一次，之后选中题目就能问。无需搜题酱账号。</p>
+  <form id="settings">
+    <label for="key">DeepSeek API Key <span id="key-state">尚未配置</span></label>
+    <div class="key-row"><input id="key" type="password" autocomplete="off" spellcheck="false" placeholder="粘贴你自己的 API Key"><button id="show-key" type="button" class="quiet">显示</button></div>
+    <p class="hint">仅保存在这台电脑的扩展设置中，不同步、不写进插件文件。已保存后留空表示保留。</p>
+    <label for="model">模型</label><input id="model" list="models" value="deepseek-flash" required spellcheck="false"><datalist id="models"><option value="deepseek-flash"><option value="deepseek-v4-pro"></datalist>
+    <p id="model-plan" class="hint" role="status" aria-live="polite"></p>
+    <details><summary>答题复核模型（默认跟随主模型）</summary><label for="review-model">复核模型（使用同一接口和 Key）</label><input id="review-model" list="models" placeholder="留空使用主模型，也可选择 deepseek-flash" spellcheck="false"><p class="hint">默认 Flash + Flash，从两个角度各判断两次；四次一致采用，有分歧再复核两次。每轮每题最多 6 次请求；待处理题自动回访一次可能再产生费用。同一模型反复判断仍可能一起答错。仅明确选择 Pro 时使用 Pro；官方图片题使用 Flash。不能解决的题暂存并排队，继续其他任务。</p></details>
+    <details><summary>接口地址</summary><label for="base-url">兼容 OpenAI 的接口地址</label><input id="base-url" type="url" value="https://api.deepseek.com" required spellcheck="false"><p class="hint">支持基础地址或完整的 /chat/completions 地址。更换地址时需要重新填写 Key。</p></details>
+    <div class="actions"><button type="submit" class="primary">保存设置</button><button type="button" id="test">测试连接</button><button type="button" id="clear-key" class="quiet">清除 Key</button></div>
+  </form>
+  <p id="status" class="status" role="status" aria-live="polite">正在读取设置…</p>
+  <section><h2>下一步，打开题目网页</h2><ol><li>刷新网页，让本地助手出现。</li><li>选中文字，右键选择“用 Runa学习助手解析选中文字”。</li><li>也可以按 <kbd>Alt</kbd> + <kbd>Q</kbd>，提取题目或直接粘贴。</li></ol><button type="button" id="open-assistant">打开独立提问页</button></section>
+  <footer>主动提问、测试连接或开启 AI 答题时发送题目。Key 用于你配置的接口；本地存储不等于加密保险箱。API 调用按你的账号计费。</footer>
+</main><script src="options.js"></script></body></html>

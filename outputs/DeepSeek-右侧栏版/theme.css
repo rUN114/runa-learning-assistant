@@ -1,0 +1,30 @@
+:root,:host{--runa-night:#092552;--runa-night-soft:#173967;--runa-gold:#f4ca72;--runa-paper:#faf7f1;--runa-ink:#21324c;--runa-muted:#637087;--runa-line:#d7dce5;color-scheme:light}
+.panel{background:var(--runa-paper);color:var(--runa-ink);border-color:var(--runa-line);border-top-color:var(--runa-gold)}
+.panel header{background:var(--runa-night);border-bottom:3px solid var(--runa-gold);padding:16px}
+.panel header h2{font-size:17px;color:#fff3dd;letter-spacing:.2px;display:flex;align-items:center;gap:9px}
+.panel header h2::before{content:'';display:inline-block;flex-shrink:0;width:40px;height:40px;margin:0;border-radius:50%;background:var(--runa-night) url('icons/icon.png') center/contain no-repeat;box-shadow:0 0 0 1px #f4ca7255}
+.panel header p,.panel header #page-context{color:#cbd5e4}
+.panel header button{background:transparent;border-color:#ffffff33;color:#fff3dd;padding:7px 9px}
+.panel header button:hover{background:var(--runa-night-soft)}
+.panel .body{background:var(--runa-paper)}
+.panel button,.panel select,.panel textarea{border-color:var(--runa-line);color:var(--runa-ink);background:#fffefa}
+.panel button:hover{background:#f1ebdf}
+.panel .primary{background:var(--runa-gold);color:var(--runa-night);border-color:var(--runa-gold);font-weight:650}
+.panel .primary:hover{background:#ffda8e;border-color:#ffda8e}
+.panel .quiet{background:transparent;border-color:transparent;color:var(--runa-muted)}
+.panel header .quiet{border-color:#ffffff33;color:#fff3dd}
+.panel button:focus-visible,.panel select:focus-visible,.panel textarea:focus-visible{outline:2px solid #a86a17;outline-offset:2px}
+.panel .modes{background:#f0f2f7;border-color:var(--runa-line)}
+.panel .modes button.active{background:var(--runa-night);color:#fff3dd}
+.panel .course-summary{background:#f4eedf;border-left:3px solid var(--runa-gold);color:var(--runa-night)}
+.panel .course-summary p,.panel .course-hint,.panel .course-details summary,.panel .status,.panel .question-label small,.panel .answer-head{color:var(--runa-muted)}
+.panel .course-details,.panel .answer-head{border-color:var(--runa-line)}
+.panel .course-toggle input{accent-color:var(--runa-night)}
+.panel #answer{color:var(--runa-ink);background:#f0f2f7;border-radius:6px}
+.panel #answer:empty:before{color:var(--runa-muted)}
+.panel .foot{background:#e9edf3;color:#596981}
+.panel .status.error,.panel .course-error{color:#a23438}
+.fab{background:var(--runa-night);color:#fff3dd;border:1px solid var(--runa-gold)}
+.fab:hover{background:var(--runa-night-soft)}
+.fab small{color:var(--runa-gold)}
+@media(max-width:360px){.panel header h2{font-size:15px;gap:7px}.panel header h2::before{width:34px;height:34px}.panel header{padding:14px}.panel header button{padding:6px 8px}}

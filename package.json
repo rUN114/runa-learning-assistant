@@ -1,0 +1,29 @@
+{
+  "name": "runa-learning-assistant",
+  "version": "1.14.1",
+  "private": true,
+  "description": "Runa学习助手本地浏览器扩展",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "node scripts/build.cjs",
+    "check": "node outputs/DeepSeek-右侧栏版/check.cjs",
+    "test:tasks": "node tests/task-metadata.cjs",
+    "test:history": "node tests/course-history.cjs",
+    "test:adapters": "node tests/ocs-adapters.cjs",
+    "test:hardening": "node tests/hardening.cjs",
+    "test:discussion": "node tests/discussion.cjs",
+    "test:browser": "node scripts/test-browser.cjs"
+  },
+  "devDependencies": {
+    "@types/chrome": "0.1.32",
+    "typescript": "5.9.3"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rUN114/runa-learning-assistant.git"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

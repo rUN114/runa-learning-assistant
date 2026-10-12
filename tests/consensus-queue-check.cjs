@@ -1,0 +1,60 @@
+// 两模型投票、暂存分歧题、继续视频及自动回访；仅自建平台与虚构接口。
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const {chromium,executablePath}=require('./browser-runtime.cjs');
+const host='https://consensus-fixture.chaoxing.com',ext=path.resolve('outputs/DeepSeek-右侧栏版'),requests=[],drafts=new Map();let context;
+const wav=Buffer.alloc(44+16000*2);wav.write('RIFF');wav.writeUInt32LE(wav.length-8,4);wav.write('WAVEfmt ',8);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);wav.writeUInt32LE(16000,24);wav.writeUInt32LE(32000,28);wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(wav.length-44,40);
+const style='<meta charset="utf-8"><style>iframe{width:700px;height:500px}video{width:500px;height:280px}li,a{padding:15px;display:block}.check_answer{background:#abc}</style>';
+const question=(text,labels,chosen)=>`<div class="singleQuesId"><div class="Zy_TItle">${text}</div><ul class="Zy_ulTop">${labels.map((t,i)=>`<li data-letter="${String.fromCharCode(65+i)}" class="${chosen===String.fromCharCode(65+i)?'check_answer':''}" onclick="this.parentNode.querySelectorAll('li').forEach(n=>n.classList.remove('check_answer'));this.classList.add('check_answer')">${String.fromCharCode(65+i)}、${t}</li>`).join('')}</ul></div>`;
+(async()=>{
+  context=await chromium.launchPersistentContext(path.resolve('work/sidebar-qa/consensus-profile-'+Date.now()),{executablePath,headless:true,args:[`--disable-extensions-except=${ext}`,`--load-extension=${ext}`]});
+  await context.route(host+'/**',async route=>{
+    const u=new URL(route.request().url()),mode=u.searchParams.get('mode'),course=u.searchParams.get('courseId'),chapter=Number(u.searchParams.get('chapterId')||u.searchParams.get('knowledgeid')||1);let body=style;
+    if(u.pathname==='/media.wav')return route.fulfill({body:wav,contentType:'audio/wav'});
+    if(u.pathname==='/media-event'){requests.push({course,chapter,kind:u.searchParams.get('event')});return route.fulfill({body:'ok'});}
+    if(u.pathname.includes('addStudentWork')){const data=JSON.parse(route.request().postData()||'{}');requests.push({course,chapter,kind:data.tempsave?'save':'submit',answers:data.answers});drafts.set(course+':'+chapter,data.answers);return route.fulfill({body:'{"status":true}',contentType:'application/json'});}
+    const query=`courseId=${course}&chapterId=${chapter}&mode=${mode}`;
+    if(u.pathname.includes('studentstudy'))body+=`<ul id="prev_tab"><li class="active" id="${chapter===2?'video':'work'}">${chapter===2?'视频':'章节测验'}</li></ul><iframe id="iframe" src="/knowledge/cards?${query}"></iframe>${chapter<3?`<button id="prevNextFocusNext" onclick="location.href='/mycourse/studentstudy?courseId=${course}&chapterId=${chapter+1}&mode=${mode}'">下一节</button>`:''}`;
+    else if(u.pathname==='/knowledge/cards')body+=`<div class="ans-attach-ct"><span class="ans-job-icon">未完成任务点</span><iframe src="${chapter===2?'/modules/video/index.html':'/work/do'}?${query}&knowledgeid=${chapter}"></iframe></div>`;
+    else if(chapter===2)body+=`<video controls muted src="/media.wav" onplay="fetch('/media-event?${query}&event=play')" onended="frameElement.closest('.ans-attach-ct').classList.add('ans-job-finished');fetch('/media-event?${query}&event=ended')"></video>`;
+    else{
+      const saved=drafts.get(course+':'+chapter)||[],judge='【判断题】2022年旧金山会晤时，习近平主席重点谈了中国在台湾问题、民主人权、道路制度、发展权利上的四条红线。';
+      body+='<div class="testTit_status">待完成</div>'+(chapter===1?question(judge,['错','对'],saved[0])+question('【单选题】金额计算使用哪一种类型？',['Integer','BigDecimal'],saved[1]):question('【单选题】下一节的金额计算类型？',['Integer','BigDecimal'],saved[0]));
+      body+=`<a class="btnSave workBtnIndex" onclick="send(true)">暂时保存</a><a class="btnSubmit workBtnIndex" onclick="send(false)">提交</a><div id="saveStatus"></div><script>function send(save){const x=new XMLHttpRequest();x.open('POST','/work/addStudentWorkNewWeb?${query}&knowledgeid=${chapter}&tempsave='+(save?1:0));x.onload=()=>{if(save)document.getElementById('saveStatus').textContent='保存成功';else{document.querySelector('.testTit_status').textContent='待批阅';document.querySelector('.testTit_status').classList.add('testTit_status_complete');frameElement.closest('.ans-attach-ct').classList.add('ans-job-finished')}};x.send(JSON.stringify({tempsave:save?1:0,answers:[...document.querySelectorAll('.singleQuesId')].map(q=>q.querySelector('.check_answer')?.dataset.letter||null)}))}</script>`;
+    }
+    await route.fulfill({body,contentType:'text/html; charset=utf-8'});
+  });
+  const worker=context.serviceWorkers()[0]||await context.waitForEvent('serviceworker');await worker.evaluate(()=>chrome.runtime.openOptionsPage());let options;for(let i=0;i<40&&!options;i++){options=context.pages().find(p=>p.url().endsWith('/options.html'));if(!options)await new Promise(r=>setTimeout(r,50));}assert.ok(options);await options.waitForLoadState();
+  await worker.evaluate(async()=>{await chrome.storage.local.set({apiKey:'consensus-fixture-fake'});self.__mode='resolve';self.__calls=[];self.__judgeCount=0;self.__active=0;self.__maxActive=0;
+    self.fetch=async(_url,init)=>{const b=JSON.parse(init.body),text=b.messages.at(-1).content,judge=text.includes('题型：judge'),review=text.includes('这是填写前的审查');self.__calls.push({model:b.model,text,judge,review,system:b.messages[0].content});self.__active++;self.__maxActive=Math.max(self.__maxActive,self.__active);try{await new Promise(r=>setTimeout(r,30));
+      let answer={choices:['B'],uncertain:false,verified:true,reason:'模拟可靠类型判断。'};
+      if(judge){self.__judgeCount++;const agreed=self.__mode==='unanimous'||(['resolve','flash-split'].includes(self.__mode)&&review)||(self.__mode==='later'&&self.__judgeCount>6);answer={verdict:agreed?false:self.__mode==='flash-split'?self.__judgeCount%2===1:b.model==='deepseek-flash',uncertain:false,verified:true,reason:'模拟条件核对：2022年巴厘岛，2023年旧金山。'};}
+      return new Response(JSON.stringify({choices:[{message:{content:JSON.stringify(answer)},finish_reason:'stop'}]}),{headers:{'content-type':'application/json'}});
+    }finally{self.__active--;}};
+  });
+  const tests=[];
+  for(const mode of ['unanimous','resolve','later','permanent','flash-default','flash-explicit','flash-alias','flash-split']){
+    const sameFlash=mode.startsWith('flash');
+    await worker.evaluate(async mode=>{self.__mode=mode.startsWith('flash')&&mode!=='flash-split'?'unanimous':mode;self.__calls=[];self.__judgeCount=0;self.__maxActive=0;await chrome.storage.local.set({model:'deepseek-flash',reviewModel:['flash-default','flash-split'].includes(mode)?'':mode==='flash-explicit'?'deepseek-flash':mode==='flash-alias'?'deepseek-v4-flash':'deepseek-v4-pro'});},mode);
+    const course=mode+'-'+Date.now(),p=await context.newPage();await p.goto(host+`/mycourse/studentstudy?courseId=${course}&chapterId=1&mode=${mode}`);await p.frameLocator('#iframe').frameLocator('iframe').locator('.singleQuesId').first().waitFor();
+    const id=await worker.evaluate(async url=>(await chrome.tabs.query({})).find(t=>t.url===url).id,p.url());
+    const handle=type=>worker.evaluate(async({id,type})=>CourseEngine.handle({type,settings:{video:true,answer:true,workAction:'submit',next:true,rate:1,muted:true}},{tab:{id},frameId:0}),{id,type});
+    const state=()=>worker.evaluate(async id=>(await chrome.storage.session.get('course-run-'+id))['course-run-'+id],id);
+    await handle('COURSE_START');let videoObserved=false;
+    for(let i=0;i<240;i++){await handle('COURSE_TICK');if(new URL(p.url()).searchParams.get('chapterId')==='2'&&await p.locator('body').getAttribute('data-videoEnded')==='yes')videoObserved=true;const s=await state();if(!s.running)break;await new Promise(r=>setTimeout(r,70));}
+    const s=await state(),calls=await worker.evaluate(()=>self.__calls),r=requests.filter(r=>r.course===course);
+    assert.equal(s.running,false,JSON.stringify(s));assert.equal(calls.filter(c=>c.judge).length,mode==='flash-split'?6:mode==='unanimous'||sameFlash?4:mode==='resolve'?6:mode==='later'?10:12);assert.equal(new Set(calls.map(c=>c.model)).size,sameFlash&&mode!=='flash-alias'?1:2);assert.equal(await worker.evaluate(()=>self.__maxActive),2);
+    if(sameFlash){assert.ok(calls.every(call=>!call.model.includes('pro')));assert.equal(s.lastConsensus.singleModel,true);assert.deepEqual(s.lastConsensus.models,['deepseek-flash',mode==='flash-alias'?'deepseek-v4-flash':'deepseek-flash']);tests.push(mode+'-no-automatic-pro','same-model-audit-'+mode);}
+    assert.equal(r.filter(r=>r.chapter===3&&r.kind==='submit').length,1);assert.equal(r.filter(r=>r.chapter===2&&r.kind==='ended').length,1,JSON.stringify({mode,r,s}));assert.equal(r.filter(r=>r.chapter===3&&r.kind==='submit')[0].answers[0],'B');
+    if(mode==='permanent'){assert.equal(s.phase,'finished-pending');assert.equal(Object.keys(s.pending).length,1);assert.equal(r.filter(r=>r.chapter===1&&r.kind==='submit').length,0);assert.equal(r.filter(r=>r.chapter===1&&r.kind==='save').length,2);tests.push('persistent-disagreement-continues-other-tasks','bounded-second-pass-no-infinite-api-loop','pending-question-never-submitted-as-certain','unresolved-count-shown-at-finish');}
+    else{assert.equal(s.phase,'finished');assert.equal(Object.keys(s.pending).length,0);assert.deepEqual(r.find(r=>r.chapter===1&&r.kind==='submit').answers,['A','B']);tests.push(mode==='flash-split'?'same-flash-disagreement-resolved-in-two-extra-reviews':mode==='unanimous'||sameFlash?'four-agreements-adopt-answer-'+mode:'resolve'===mode?'split-votes-corrected-by-two-final-reviews':'deferred-question-resolved-on-automatic-revisit');}
+    if(mode==='later'){assert.equal(r.filter(r=>r.chapter===1&&r.kind==='save').length,1);assert.deepEqual(r.find(r=>r.kind==='save').answers,[null,'B']);assert.equal(calls.filter(c=>!c.judge&&c.text.includes('金额计算使用')).length,4);tests.push('partial-native-save-before-next-chapter','saved-reliable-answer-preserved-on-revisit','video-and-later-quiz-not-blocked-by-ai-disagreement');}
+    assert.ok(calls.slice(0,4).every(c=>!c.text.includes('候选（待检查数据）')));tests.push(mode+'-first-four-votes-have-independent-contexts');await p.close();
+  }
+  await options.reload();await options.locator('#model-plan').filter({hasText:'deepseek-flash + deepseek-flash'}).waitFor();
+  await options.locator('details').filter({has:options.locator('#review-model')}).locator('summary').click();
+  await options.locator('#review-model').fill('');assert.match(await options.locator('#model-plan').innerText(),/deepseek-flash \+ deepseek-flash/);await options.getByRole('button',{name:'保存设置',exact:true}).click();await options.locator('#status').filter({hasText:'设置已保存'}).waitFor();assert.equal(await worker.evaluate(async()=>(await config()).reviewModel),'');tests.push('settings-preview-follows-primary-model','blank-review-saved-without-pro');
+  await options.locator('#review-model').fill('deepseek-v4-pro');assert.match(await options.locator('#model-plan').innerText(),/deepseek-v4-pro/);await options.getByRole('button',{name:'保存设置',exact:true}).click();await options.waitForFunction(async()=>(await chrome.runtime.sendMessage({type:'GET_SETTINGS'})).reviewModel==='deepseek-v4-pro');assert.equal(await worker.evaluate(async()=>(await config()).reviewModel),'deepseek-v4-pro');tests.push('explicit-pro-stays-selectable');
+  await worker.evaluate(async()=>{await chrome.storage.local.set({reviewModel:''});await runModel('请写一段课程讨论文字',new AbortController().signal);});
+  const manual=await worker.evaluate(()=>self.__calls.at(-1));assert.match(manual.system,/普通中文段落/);assert.match(manual.system,/不要使用 Markdown/);assert.match(manual.system,/不编造个人经历/);tests.push('shared-writing-prompt-requires-plain-student-prose');
+  fs.writeFileSync('work/sidebar-qa/consensus-queue-results.json',JSON.stringify({tests,mockOnly:true,realCourseModified:false,realApiCalled:false},null,2));console.log('PASS',tests.length,'consensus and deferred-queue checks',tests);
+})().catch(e=>{console.error(e);process.exitCode=1;}).finally(async()=>{await context?.close();});

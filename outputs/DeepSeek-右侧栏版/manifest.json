@@ -1,0 +1,145 @@
+{
+  "manifest_version": 3,
+  "name": "Runa学习助手",
+  "version": "1.14.1",
+  "description": "学习通视频、章节测验与教师讨论助手；使用自己的 AI 接口，默认 Flash 复核，无需搜题酱账号。",
+  "minimum_chrome_version": "120",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "contextMenus",
+    "sidePanel",
+    "alarms",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "打开 Runa学习助手",
+    "default_icon": {
+      "16": "icons/icon.png",
+      "32": "icons/icon.png"
+    }
+  },
+  "icons": {
+    "48": "icons/icon.png",
+    "128": "icons/icon.png"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "commands": {
+    "open-assistant": {
+      "suggested_key": {
+        "default": "Alt+Q"
+      },
+      "description": "打开 Runa学习助手"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.chaoxing.com/*",
+        "*://*.xuexitong.com/*",
+        "*://*.edu.cn/*",
+        "*://*.org.cn/*",
+        "*://*.xueyinonline.com/*",
+        "*://*.hnsyu.net/*",
+        "*://*.qutjxjy.cn/*",
+        "*://*.ynny.cn/*",
+        "*://*.hnvist.cn/*",
+        "*://*.fjlecb.cn/*",
+        "*://*.gdhkmooc.com/*",
+        "*://*.cugbonline.cn/*",
+        "*://*.zjelib.cn/*",
+        "*://*.cqrspx.cn/*",
+        "*://*.neauce.com/*",
+        "*://*.zhihui-yun.com/*",
+        "*://*.cqie.cn/*",
+        "*://*.ccqmxx.com/*",
+        "*://*.jxgmxy.com/*",
+        "*://*.jnzyjsxy.cn/*",
+        "*://*.smjyxy.cn/*",
+        "*://*.sslibrary.com/*",
+        "*://*.xuexi365.com/*"
+      ],
+      "js": [
+        "work-observer.js"
+      ],
+      "world": "MAIN",
+      "all_frames": true,
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "*://*.chaoxing.com/*",
+        "*://*.xuexitong.com/*",
+        "*://*.edu.cn/*",
+        "*://*.org.cn/*",
+        "*://*.xueyinonline.com/*",
+        "*://*.hnsyu.net/*",
+        "*://*.qutjxjy.cn/*",
+        "*://*.ynny.cn/*",
+        "*://*.hnvist.cn/*",
+        "*://*.fjlecb.cn/*",
+        "*://*.gdhkmooc.com/*",
+        "*://*.cugbonline.cn/*",
+        "*://*.zjelib.cn/*",
+        "*://*.cqrspx.cn/*",
+        "*://*.neauce.com/*",
+        "*://*.zhihui-yun.com/*",
+        "*://*.cqie.cn/*",
+        "*://*.ccqmxx.com/*",
+        "*://*.jxgmxy.com/*",
+        "*://*.jnzyjsxy.cn/*",
+        "*://*.smjyxy.cn/*",
+        "*://*.sslibrary.com/*",
+        "*://*.xuexi365.com/*"
+      ],
+      "js": [
+        "work-events.js"
+      ],
+      "all_frames": true,
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "content.js",
+        "course-ui.js"
+      ],
+      "all_frames": true,
+      "match_about_blank": true,
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "theme.css",
+        "icons/icon.png",
+        "lib/font_ref_cx.bin"
+      ],
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'"
+  }
+}
